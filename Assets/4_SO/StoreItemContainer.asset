@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f80d32f916314372804bb29501263c3c, type: 3}
+  m_Name: StoreItemContainer
+  m_EditorClassIdentifier: 
+  storeItemList:
+  - Id: 0
+    Name: Guy
+    Price: 100
+    Icon: {fileID: 21300000, guid: afb1eb6db263c73429abcadedd4607a4, type: 3}
+    Prefab: {fileID: 7363997819604639264, guid: 63f56fca1e9c3cc48ba57e14a6774a4b,
+      type: 3}
+  - Id: 1
+    Name: Zombie
+    Price: 200
+    Icon: {fileID: 21300000, guid: 8c950c7829811dc48a532caad8f4fbe1, type: 3}
+    Prefab: {fileID: 5187417456626266655, guid: abf17b2357e9a2f46be8ee90facfb964,
+      type: 3}

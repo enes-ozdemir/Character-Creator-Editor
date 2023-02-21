@@ -8,7 +8,7 @@ public class StoreUI : MonoBehaviour
     UIStoreItem itemUIPrefab;
     void Start()
     {
-        foreach (StoreItem item in Store.Instance.StoreItems)
+        foreach (StoreItem item in Store.Instance.StoreItems.storeItemList)
         {
             UIStoreItem listItem = Instantiate(itemUIPrefab, transform);
             listItem.Initialize(item);
