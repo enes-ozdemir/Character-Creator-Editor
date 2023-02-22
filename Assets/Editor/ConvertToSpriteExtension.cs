@@ -12,7 +12,7 @@ namespace Editor
             if (texture2D != null)
                 return Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), Vector2.zero);
             
-            Debug.LogError("Error while getting the sprite please select the asset again");
+            Debug.LogError("Error while creating the sprite automatically please select the asset again");
             return null;
         }
     }

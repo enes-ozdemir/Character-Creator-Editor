@@ -7,9 +7,12 @@ namespace Editor
 {
     public class CharacterCreatorEditor : EditorWindow
     {
-        private string[] _tabs = {"Create Item", "Edit Item", "Scan Project"};
+        private string[] _tabs = {"Create Item", "Edit Item", "Scan Project", "Edit Prefab Config"};
         private int _tabSelected = 0;
-        
+        private static SerializedObject _so;
+        private static SerializedProperty _propList;
+        private StoreItemContainer _storeItemContainer;
+
         [MenuItem("Tools/Character Creator")]
         public static void OpenWindow()
         {
@@ -20,19 +23,35 @@ namespace Editor
 
         private void OnEnable()
         {
-            var container = GetStoreItemContainer();
-            CharacterCreateSection.SetStoreItemContainer(container);
+            _storeItemContainer = GetStoreItemContainer();
+
+            InitCreateSection();
+            InitStoreSection();
+        }
+
+        private void InitStoreSection()
+        {
+            StoreItemEditor.SetStoreItemContainer(_storeItemContainer);
+
+            _so = new SerializedObject(_storeItemContainer);
+            _propList = _so.FindProperty("storeItemList");
+            StoreItemEditor.SetSerializedObjects(_so, _propList);
+        }
+
+        private void InitCreateSection()
+        {
+            CharacterCreateSection.SetStoreItemContainer(_storeItemContainer);
             var prefabConfigSettings = GetPrefabConfigSettings();
             CharacterCreateSection.SetPrefabConfigSettings(prefabConfigSettings);
-
+            CharacterCreateSection.SetTempConfigSettings();
         }
 
         private PrefabConfigSettings GetPrefabConfigSettings()
         {
-            string[] storeItemGuids = AssetDatabase.FindAssets("t:" + nameof(PrefabConfigSettings));
-            string path = AssetDatabase.GUIDToAssetPath(storeItemGuids[0]);
-            var storeItemContainer = AssetDatabase.LoadAssetAtPath<PrefabConfigSettings>(path);
-            return storeItemContainer;
+            string[] prefabGuids = AssetDatabase.FindAssets("t:" + nameof(PrefabConfigSettings));
+            string path = AssetDatabase.GUIDToAssetPath(prefabGuids[0]);
+            var prefabConfigSettings = AssetDatabase.LoadAssetAtPath<PrefabConfigSettings>(path);
+            return prefabConfigSettings;
         }
 
         private StoreItemContainer GetStoreItemContainer()
@@ -54,9 +73,12 @@ namespace Editor
                     CharacterCreateSection.DrawGUI();
                     break;
                 case "Edit Item":
-
+                    StoreItemEditor.DrawGUI();
                     break;
                 case "Scan Project":
+
+                    break;
+                case "Edit Prefab Config":
 
                     break;
             }

@@ -9,54 +9,46 @@ namespace Editor
 {
     public class StoreItemEditor : EditorWindow
     {
-        public StoreItemContainer storeItemContainer;
-        private List<StoreItem> _storeItemList;
-        private int _selectedProductIndex = 0;
-        private StoreItem _tempSelectedProduct = null;
-        private string _folderPath = "Assets/4_SO";
-        private bool _isEditing = false;
+        public static StoreItemContainer _storeItemContainer;
+        private static List<StoreItem> _storeItemList;
+        private static int _selectedProductIndex = 0;
 
-        private SerializedObject so;
-        private SerializedProperty _propList;
+        private static StoreItem _tempSelectedProduct = null;
 
-        private void OnEnable()
+        //private string _folderPath = "Assets/4_SO";
+        private static bool _isEditing = false;
+
+        private static SerializedObject _so;
+        private static SerializedProperty _propList;
+
+
+        public static void DrawGUI()
         {
-            string[] storeItemGuids = AssetDatabase.FindAssets("t:" + nameof(StoreItemContainer));
-            string path = AssetDatabase.GUIDToAssetPath(storeItemGuids[0]);
-            storeItemContainer = AssetDatabase.LoadAssetAtPath<StoreItemContainer>(path);
-            _storeItemList = storeItemContainer.storeItemList;
-            so = new SerializedObject(storeItemContainer);
-
-            _propList = so.FindProperty("storeItemList");
-            
-
-
-            //TODO add check there can't be more than one StoreItemContainer or make it dynamic
-        }
-
-        [MenuItem("Tools/Store Item Editor")]
-        public static void OpenWindow()
-        {
-            var window = GetWindow<StoreItemEditor>();
-            window.titleContent = new GUIContent("Store Item Editor");
-            window.Show();
-        }
-
-        private void OnGUI()
-        {
-            so.Update();
+            _so.Update();
             EditorGUILayout.PropertyField(_propList);
-            so.ApplyModifiedProperties();
+            _so.ApplyModifiedProperties();
             DisplayEditArea();
         }
 
-        private void DisplayEditArea()
+        public static void SetStoreItemContainer(StoreItemContainer container)
+        {
+            _storeItemContainer = container;
+            _storeItemList = _storeItemContainer.storeItemList;
+        }
+
+        public static void SetSerializedObjects(SerializedObject so, SerializedProperty _serializedProperty)
+        {
+            _so = so;
+            _propList = _serializedProperty;
+        }
+
+        private static void DisplayEditArea()
         {
             var productNames = new List<string>();
             foreach (var product in _storeItemList) productNames.Add(product.Name);
 
-            GUILayout.Space( 10 );
-            GUILayout.Label( "Edit item area", EditorStyles.boldLabel );
+            GUILayout.Space(10);
+            GUILayout.Label("Edit item area", EditorStyles.boldLabel);
             using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 _selectedProductIndex =
@@ -113,8 +105,8 @@ namespace Editor
                         if (GUILayout.Button("Save"))
                         {
                             _isEditing = false;
-                            storeItemContainer.storeItemList[_selectedProductIndex] = _tempSelectedProduct;
-                            EditorUtility.SetDirty(storeItemContainer);
+                            _storeItemContainer.storeItemList[_selectedProductIndex] = _tempSelectedProduct;
+                            EditorUtility.SetDirty(_storeItemContainer);
                             AssetDatabase.SaveAssets();
                             _tempSelectedProduct = null;
                         }

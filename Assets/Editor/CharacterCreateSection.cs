@@ -10,12 +10,10 @@ namespace Editor
     {
         private static StoreItemContainer _storeItemContainer;
         private static StoreItem _tempSelectedProduct = new StoreItem();
-        private static bool _isAutoIncrement = true;
         private static bool _isPrefabChanged;
         private static bool _autoCreateSprite;
         private static bool _isFbxSelected;
-        private static bool _isOptimizeForMobile = true;
-
+        private static bool _isOptimizeForMobileEnabled = true;
 
         private const string PrefabPath = "Assets/2_Prefabs/";
         private static string _selectedFbxPath;
@@ -25,6 +23,9 @@ namespace Editor
 
         private static bool _showConfig;
         private static PrefabConfigSettings _prefabConfigSettings;
+        private static AnimatorController _tempAnimator;
+        private static float _tempColliderHeight = 1.1f;
+        private static float _tempColliderRadius = 0.2f;
 
         #endregion
 
@@ -40,9 +41,17 @@ namespace Editor
             _isFbxSelected = false;
             _autoCreateSprite = false;
             _isPrefabChanged = false;
-            _isOptimizeForMobile = true;
-            _isAutoIncrement = false;
+            _isOptimizeForMobileEnabled = true;
             _tempSelectedProduct = new StoreItem();
+
+            SetTempConfigSettings();
+        }
+
+        public static void SetTempConfigSettings()
+        {
+            _tempAnimator = _prefabConfigSettings.animator;
+            _tempColliderHeight = _prefabConfigSettings.colliderHeight;
+            _tempColliderRadius = _prefabConfigSettings.colliderRadius;
         }
 
         private static void CreateSection()
@@ -62,11 +71,10 @@ namespace Editor
             {
                 DrawCharacterData();
                 DrawPrefabSettings();
+
                 DrawSpriteSettings();
-                DrawIDSettings();
                 DrawConfigurationSettings();
 
-                _isOptimizeForMobile = EditorGUILayout.Toggle("Optimize Assets For Mobile", _isOptimizeForMobile);
 
                 if (GUILayout.Button("Create"))
                 {
@@ -79,13 +87,9 @@ namespace Editor
 
         private static void CreatePrefab()
         {
-            var fbx = ImportFBXFromPath(_selectedFbxPath);
-
-            var prefab = CreatePrefabForCharacter(_tempSelectedProduct, fbx);
-            // _tempSelectedProduct.Prefab =
-            //     EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), false) as
-            //         GameObject;
-
+            var path = _isFbxSelected ? _selectedFbxPath : AssetDatabase.GetAssetPath(_tempSelectedProduct.Prefab);
+            var prefab = ImportFBXFromPath(path);
+            CreatePrefabForCharacter(_tempSelectedProduct, prefab);
             AddNewItemToContainer();
         }
 
@@ -115,30 +119,12 @@ namespace Editor
             return true;
         }
 
-        private static void DrawIDSettings()
-        {
-            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
-            {
-                _isAutoIncrement = EditorGUILayout.Toggle("Auto Increment ID", _isAutoIncrement);
-
-                using (new EditorGUI.DisabledScope(_isAutoIncrement))
-                {
-                    using (new GUILayout.HorizontalScope())
-                    {
-                        EditorGUILayout.LabelField("ID", GUILayout.Width(50f));
-                        var nextID = _storeItemContainer.storeItemList.Count;
-                        _tempSelectedProduct.Id = EditorGUILayout.IntField(nextID);
-                    }
-                }
-            }
-        }
-
         private static void DrawSpriteSettings()
         {
             using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 _autoCreateSprite = !_isFbxSelected &&
-                                    EditorGUILayout.Toggle("Automatically Create Sprite", _autoCreateSprite);
+                                    EditorGUILayout.Toggle("Auto Create Sprite", _autoCreateSprite);
 
                 using (new EditorGUI.DisabledScope(_autoCreateSprite))
                 {
@@ -147,7 +133,6 @@ namespace Editor
                         _tempSelectedProduct.Icon =
                             EditorGUILayout.ObjectField("Icon", _tempSelectedProduct.Icon, typeof(Sprite), false) as
                                 Sprite;
-                        //Repaint();
                     }
                 }
 
@@ -161,34 +146,40 @@ namespace Editor
 
         private static void DrawPrefabSettings()
         {
-            using (new GUILayout.HorizontalScope())
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                using (new EditorGUI.DisabledScope(_isFbxSelected))
+                using (new GUILayout.HorizontalScope())
                 {
-                    var previousPrefab = _tempSelectedProduct.Prefab;
-                    _tempSelectedProduct.Prefab =
-                        EditorGUILayout.ObjectField("Select Prefab/FBX", _tempSelectedProduct.Prefab,
-                                typeof(GameObject), false) as
-                            GameObject;
+                    using (new EditorGUI.DisabledScope(_isFbxSelected))
+                    {
+                        var previousPrefab = _tempSelectedProduct.Prefab;
+                        _tempSelectedProduct.Prefab =
+                            EditorGUILayout.ObjectField("Select Prefab/FBX", _tempSelectedProduct.Prefab,
+                                    typeof(GameObject), false) as
+                                GameObject;
 
-                    _isPrefabChanged = _tempSelectedProduct.Prefab != previousPrefab;
+                        _isPrefabChanged = _tempSelectedProduct.Prefab != previousPrefab;
+                    }
+
+                    if (GUILayout.Button("Select FBX"))
+                    {
+                        string path = EditorUtility.OpenFilePanel("Select FBX", "", "fbx");
+                        _selectedFbxPath = path;
+                        _isFbxSelected = true;
+                    }
                 }
 
-                if (GUILayout.Button("Select FBX"))
+                if (_isFbxSelected)
                 {
-                    string path = EditorUtility.OpenFilePanel("Select FBX", "", "fbx");
-                    _selectedFbxPath = path;
-                    _isFbxSelected = true;
+                    using (new GUILayout.VerticalScope())
+                    {
+                        EditorGUILayout.LabelField("Selected FBX", _selectedFbxPath);
+                        _tempSelectedProduct.Prefab = null;
+                    }
                 }
-            }
 
-            if (_isFbxSelected)
-            {
-                using (new GUILayout.VerticalScope())
-                {
-                    EditorGUILayout.LabelField("Selected FBX", _selectedFbxPath);
-                    _tempSelectedProduct.Prefab = null;
-                }
+                _isOptimizeForMobileEnabled =
+                    EditorGUILayout.Toggle("Optimize For Mobile", _isOptimizeForMobileEnabled);
             }
         }
 
@@ -199,6 +190,7 @@ namespace Editor
             {
                 _tempSelectedProduct.Name = EditorGUILayout.TextField("Name", _tempSelectedProduct.Name);
                 _tempSelectedProduct.Price = EditorGUILayout.IntField("Price", _tempSelectedProduct.Price);
+                _tempSelectedProduct.Id = _storeItemContainer.storeItemList.Count;
             }
         }
 
@@ -210,13 +202,13 @@ namespace Editor
             {
                 using (new GUILayout.VerticalScope())
                 {
-                    _prefabConfigSettings.animator =
-                        EditorGUILayout.ObjectField("Animator", _prefabConfigSettings.animator,
+                    _tempAnimator =
+                        EditorGUILayout.ObjectField("Animator", _tempAnimator,
                             typeof(AnimatorController), false) as AnimatorController;
-                    _prefabConfigSettings.colliderRadius =
-                        EditorGUILayout.FloatField("Collider Radius", _prefabConfigSettings.colliderRadius);
-                    _prefabConfigSettings.colliderHeight =
-                        EditorGUILayout.FloatField("Collider Height", _prefabConfigSettings.colliderHeight);
+                    _tempColliderRadius =
+                        EditorGUILayout.FloatField("Collider Radius", _tempColliderRadius);
+                    _tempColliderHeight =
+                        EditorGUILayout.FloatField("Collider Height", _tempColliderHeight);
                 }
             }
         }
@@ -243,7 +235,7 @@ namespace Editor
             AssetDatabase.Refresh();
 
             var modelImporter = AssetImporter.GetAtPath(destinationPath) as ModelImporter;
-            SetDefaultModelSettings(modelImporter, _isOptimizeForMobile);
+            SetDefaultModelSettings(modelImporter);
 
             var fbxGameObject = AssetDatabase.LoadAssetAtPath<GameObject>(destinationPath);
 
@@ -255,7 +247,7 @@ namespace Editor
             _storeItemContainer.storeItemList.Add(_tempSelectedProduct);
         }
 
-        private static GameObject CreatePrefabForCharacter(StoreItem storeItem, GameObject model)
+        private static void CreatePrefabForCharacter(StoreItem storeItem, GameObject model)
         {
             CheckIfPrefabAlreadyExists(storeItem);
 
@@ -266,10 +258,8 @@ namespace Editor
 
             PrefabUtility.UnpackPrefabInstance(prefab, PrefabUnpackMode.OutermostRoot, InteractionMode.AutomatedAction);
             storeItem.Prefab = PrefabUtility.SaveAsPrefabAsset(prefab, $"{PrefabPath}{prefab.name}.prefab");
-         
-            DestroyImmediate(prefab);
 
-            return prefab;
+            DestroyImmediate(prefab);
         }
 
         private static void CheckIfPrefabAlreadyExists(StoreItem storeItem)
@@ -295,16 +285,18 @@ namespace Editor
 
         private static void AddCollider(GameObject prefab)
         {
-            prefab.AddComponent<CapsuleCollider>();
+            var collider = prefab.AddComponent<CapsuleCollider>();
+            collider.radius = _tempColliderRadius;
+            collider.height = _tempColliderHeight;
         }
 
-        private static void SetDefaultModelSettings(ModelImporter importer, bool isOptimizeForMobile)
+        private static void SetDefaultModelSettings(ModelImporter importer)
         {
             importer.animationType = ModelImporterAnimationType.Human;
             importer.importAnimation = false;
             importer.importConstraints = false;
 
-            if (isOptimizeForMobile)
+            if (_isOptimizeForMobileEnabled)
             {
                 SetMobileOptimizations(importer);
             }
