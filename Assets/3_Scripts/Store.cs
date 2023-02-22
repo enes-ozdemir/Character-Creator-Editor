@@ -1,7 +1,6 @@
 ﻿using HomaGames.Internal.Utilities;
 using System;
-using System.Collections.Generic;
-using _3_Scripts;
+using _3_Scripts.SO;
 
 public class Store : Singleton<Store>
 {

@@ -1,4 +1,5 @@
 ﻿using _3_Scripts;
+using _3_Scripts.SO;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace Editor
     {
         private string[] _tabs = {"Create Item", "Edit Item", "Scan Project"};
         private int _tabSelected = 0;
-
+        
         [MenuItem("Tools/Character Creator")]
         public static void OpenWindow()
         {
@@ -21,6 +22,17 @@ namespace Editor
         {
             var container = GetStoreItemContainer();
             CharacterCreateSection.SetStoreItemContainer(container);
+            var prefabConfigSettings = GetPrefabConfigSettings();
+            CharacterCreateSection.SetPrefabConfigSettings(prefabConfigSettings);
+
+        }
+
+        private PrefabConfigSettings GetPrefabConfigSettings()
+        {
+            string[] storeItemGuids = AssetDatabase.FindAssets("t:" + nameof(PrefabConfigSettings));
+            string path = AssetDatabase.GUIDToAssetPath(storeItemGuids[0]);
+            var storeItemContainer = AssetDatabase.LoadAssetAtPath<PrefabConfigSettings>(path);
+            return storeItemContainer;
         }
 
         private StoreItemContainer GetStoreItemContainer()

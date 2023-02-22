@@ -25,3 +25,13 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 8c950c7829811dc48a532caad8f4fbe1, type: 3}
     Prefab: {fileID: 5187417456626266655, guid: abf17b2357e9a2f46be8ee90facfb964,
       type: 3}
+  - Id: 4
+    Name: asdasd
+    Price: 0
+    Icon: {fileID: 21300000, guid: 3086d66a563317b40a20a20da2c64ac0, type: 3}
+    Prefab: {fileID: 100056, guid: 8c53cffd52097cf4582f0a090c9a833e, type: 3}
+  - Id: 4
+    Name: asdasd
+    Price: 0
+    Icon: {fileID: 21300000, guid: 3086d66a563317b40a20a20da2c64ac0, type: 3}
+    Prefab: {fileID: 100056, guid: 8c53cffd52097cf4582f0a090c9a833e, type: 3}
