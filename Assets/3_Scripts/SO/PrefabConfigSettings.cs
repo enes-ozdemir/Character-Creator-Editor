@@ -7,7 +7,7 @@ namespace _3_Scripts.SO
     public class PrefabConfigSettings : ScriptableObject
     {
         public AnimatorController animator;
-        public float colliderHeight = 1f;
-        public float colliderRadius = 1f;
+        public float colliderHeight = 1.1f;
+        public float colliderRadius = 0.2f;
     }
 }
