@@ -7,10 +7,11 @@ namespace Editor
 {
     public class CharacterCreatorEditor : EditorWindow
     {
-        private string[] _tabs = {"Create Item", "Edit Item", "Scan Project"};
-        private int _tabSelected = 0;
-        private static SerializedObject _so;
-        private static SerializedProperty _propList;
+        private const string CreateCharacterTab = "Create Character";
+        private const string EditCharacterTab = "Edit Character";
+        private const string ScanProjectTab = "Scan Project";
+        private string[] _tabs = {CreateCharacterTab, EditCharacterTab, ScanProjectTab};
+        private int _tabSelected;
         private StoreItemContainer _storeItemContainer;
 
         public static Action<int> onTabChanged;
@@ -19,7 +20,7 @@ namespace Editor
         public static void OpenWindow()
         {
             var window = GetWindow<CharacterCreatorEditor>();
-            window.titleContent = new GUIContent("Character Creator");
+            window.titleContent = new GUIContent("Character Creator Editor");
             window.Show();
         }
 
@@ -27,26 +28,46 @@ namespace Editor
         {
             onTabChanged += OpenTab;
             _storeItemContainer = GetStoreItemContainer();
+            
+            InitializeTabs();
+        }
+        
+        private void OnGUI()
+        {
+            GUILayout.Space(20);
+            _tabSelected = GUILayout.Toolbar(_tabSelected, _tabs);
+
+            CreateTab();
+        }
+
+        private void InitializeTabs()
+        {
             InitCreateSection();
             InitStoreSection();
             InitSearchSection();
         }
 
+        private void CreateTab()
+        {
+            switch (_tabs[_tabSelected])
+            {
+                case CreateCharacterTab:
+                    CharacterCreateSection.DrawGUI();
+                    break;
+                case EditCharacterTab:
+                    CharacterEditSection.DrawGUI();
+                    break;
+                case ScanProjectTab:
+                    CharacterScanSection.DrawGUI();
+                    break;
+            }
+        }
+
         private void OnDisable() => onTabChanged += OpenTab;
 
-        private void InitSearchSection()
-        {
-            CharacterScanEditor.SetStoreItemContainer(_storeItemContainer);
-        }
+        private void InitSearchSection() => CharacterScanSection.SetStoreItemContainer(_storeItemContainer);
 
-        private void InitStoreSection()
-        {
-            StoreItemEditor.SetStoreItemContainer(_storeItemContainer);
-
-            _so = new SerializedObject(_storeItemContainer);
-            _propList = _so.FindProperty("storeItemList");
-            StoreItemEditor.SetSerializedObjects(_so, _propList);
-        }
+        private void InitStoreSection() => CharacterEditSection.SetStoreItemContainer(_storeItemContainer);
 
         private void InitCreateSection()
         {
@@ -70,30 +91,6 @@ namespace Editor
             string path = AssetDatabase.GUIDToAssetPath(storeItemGuids[0]);
             var storeItemContainer = AssetDatabase.LoadAssetAtPath<StoreItemContainer>(path);
             return storeItemContainer;
-        }
-
-        private void OnGUI()
-        {
-            GUILayout.Space(20);
-            _tabSelected = GUILayout.Toolbar(_tabSelected, _tabs);
-
-            CreateTab();
-        }
-
-        private void CreateTab()
-        {
-            switch (_tabs[_tabSelected])
-            {
-                case "Create Item":
-                    CharacterCreateSection.DrawGUI();
-                    break;
-                case "Edit Item":
-                    StoreItemEditor.DrawGUI();
-                    break;
-                case "Scan Project":
-                    CharacterScanEditor.DrawGUI();
-                    break;
-            }
         }
 
         private void OpenTab(int newTabIndex) => _tabSelected = newTabIndex;
