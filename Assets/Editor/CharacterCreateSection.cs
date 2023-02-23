@@ -54,6 +54,8 @@ namespace Editor
             _tempColliderRadius = _prefabConfigSettings.colliderRadius;
         }
 
+        public static void SetPrefab(GameObject prefab) => _tempSelectedProduct.Prefab = prefab;
+
         private static void CreateSection()
         {
             GUILayout.Space(10);
@@ -257,7 +259,7 @@ namespace Editor
             AddAnimator(prefab);
 
             PrefabUtility.UnpackPrefabInstance(prefab, PrefabUnpackMode.OutermostRoot, InteractionMode.AutomatedAction);
-            storeItem.Prefab = PrefabUtility.SaveAsPrefabAsset(prefab, $"{PrefabPath}{prefab.name}.prefab");
+            storeItem.Prefab = PrefabUtility.SaveAsPrefabAsset(prefab, $"{PrefabPath}Char{_tempSelectedProduct.Id}.prefab");
 
             DestroyImmediate(prefab);
         }

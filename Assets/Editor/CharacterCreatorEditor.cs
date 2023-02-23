@@ -1,4 +1,4 @@
-﻿using _3_Scripts;
+﻿using System;
 using _3_Scripts.SO;
 using UnityEditor;
 using UnityEngine;
@@ -7,11 +7,13 @@ namespace Editor
 {
     public class CharacterCreatorEditor : EditorWindow
     {
-        private string[] _tabs = {"Create Item", "Edit Item", "Scan Project", "Edit Prefab Config"};
+        private string[] _tabs = {"Create Item", "Edit Item", "Scan Project"};
         private int _tabSelected = 0;
         private static SerializedObject _so;
         private static SerializedProperty _propList;
         private StoreItemContainer _storeItemContainer;
+
+        public static Action<int> onTabChanged;
 
         [MenuItem("Tools/Character Creator")]
         public static void OpenWindow()
@@ -23,10 +25,18 @@ namespace Editor
 
         private void OnEnable()
         {
+            onTabChanged += OpenTab;
             _storeItemContainer = GetStoreItemContainer();
-
             InitCreateSection();
             InitStoreSection();
+            InitSearchSection();
+        }
+
+        private void OnDisable() => onTabChanged += OpenTab;
+
+        private void InitSearchSection()
+        {
+            CharacterScanEditor.SetStoreItemContainer(_storeItemContainer);
         }
 
         private void InitStoreSection()
@@ -67,6 +77,11 @@ namespace Editor
             GUILayout.Space(20);
             _tabSelected = GUILayout.Toolbar(_tabSelected, _tabs);
 
+            CreateTab();
+        }
+
+        private void CreateTab()
+        {
             switch (_tabs[_tabSelected])
             {
                 case "Create Item":
@@ -76,12 +91,11 @@ namespace Editor
                     StoreItemEditor.DrawGUI();
                     break;
                 case "Scan Project":
-
-                    break;
-                case "Edit Prefab Config":
-
+                    CharacterScanEditor.DrawGUI();
                     break;
             }
         }
+
+        private void OpenTab(int newTabIndex) => _tabSelected = newTabIndex;
     }
 }
