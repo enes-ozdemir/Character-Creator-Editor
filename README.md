@@ -2,7 +2,7 @@
 
 The character Creator Editor tool provides a convenient way to create, edit, and scan characters for a character store. </br>
 
-In addition to its powerful creation and editing features, it also includes an optimization tool that allows users to optimize their character models for low-end devices. 
+In addition to its powerful creation and editing features, it also includes an mobile optimization that allows users to optimize their character models for low-end devices. 
 
 The character Creator tool consists of 3 sections.
 
