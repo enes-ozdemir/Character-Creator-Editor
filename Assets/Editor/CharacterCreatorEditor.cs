@@ -28,10 +28,10 @@ namespace Editor
         {
             onTabChanged += OpenTab;
             _storeItemContainer = GetStoreItemContainer();
-            
+
             InitializeTabs();
         }
-        
+
         private void OnGUI()
         {
             GUILayout.Space(20);

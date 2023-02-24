@@ -92,21 +92,21 @@ namespace Editor
                 using (new GUILayout.HorizontalScope())
                 {
                     _tempSelectedProduct.Icon =
-                        EditorGUILayout.ObjectField("Icon", _tempSelectedProduct.Icon, typeof(Sprite), false) as
-                            Sprite;
+                        EditorGUILayout.ObjectField("Icon", _tempSelectedProduct.Icon,
+                            typeof(Sprite), false) as Sprite;
                 }
 
                 if (_isFbxSelected) return;
 
                 EditorGUILayout.HelpBox("You can Auto-create icon selecting a model or fbx from the project ",
                     MessageType.Info);
-                
+
                 if (GUILayout.Button("Create Icon Automatically"))
                 {
                     if (_tempSelectedProduct.Prefab != null)
                     {
-                        _tempSelectedProduct.Icon =
-                            ConvertToSpriteExtension.ConvertToSprite(_tempSelectedProduct.Prefab);
+                        var sprite = ConvertToSpriteExtension.ConvertToSprite(_tempSelectedProduct.Prefab);
+                        if (sprite != null) Debug.Log("Sprite automatically generated");
                     }
                     else
                     {
@@ -200,9 +200,11 @@ namespace Editor
         private static void CreatePrefab()
         {
             var path = _isFbxSelected ? _selectedFbxPath : AssetDatabase.GetAssetPath(_tempSelectedProduct.Prefab);
-            var prefab = ImportFBXFromPath(path);
+            var prefab = ImportObjectFromPath(path, out var isFbxFile);
             if (prefab == null) return;
-            CreatePrefabForCharacter(_tempSelectedProduct, prefab);
+
+            if (isFbxFile) CreatePrefabForCharacter(_tempSelectedProduct, prefab);
+
             AddNewItemToContainer();
 
             Debug.Log($"Prefab created at {path}");
@@ -236,46 +238,61 @@ namespace Editor
         public static void SetPrefabConfigSettings(PrefabConfigSettings prefabConfigSettings) =>
             _prefabConfigSettings = prefabConfigSettings;
 
-        private static GameObject ImportFBXFromPath(string path)
+        private static GameObject ImportObjectFromPath(string path, out bool isFbx)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                Debug.LogError("Path can't be empty");
-                return null;
-            }
+            isFbx = false;
+
+            if (IsPathNull(path)) return null;
 
             var fileName = Path.GetFileName(path);
-
-            if (fileName.Contains(".prefab"))
-            {
-                Debug.LogError("Please select an FBX file");
-                _tempSelectedProduct.Prefab = null;
-                return null;
-            }
-
             string destinationPath = FbxPath + fileName;
 
-            if (File.Exists(destinationPath))
-            {
-                Debug.LogWarning($"File already exists at {destinationPath} ");
-                return AssetDatabase.LoadAssetAtPath<GameObject>(destinationPath);
-            }
+            if (IsFileAlreadyExists(destinationPath)) return null;
 
             FileUtil.CopyFileOrDirectory(path, destinationPath);
             AssetDatabase.Refresh();
 
-            var modelImporter = AssetImporter.GetAtPath(destinationPath) as ModelImporter;
-            SetDefaultModelSettings(modelImporter);
+            if (fileName.Contains(".FBX"))
+            {
+                var modelImporter = AssetImporter.GetAtPath(destinationPath) as ModelImporter;
+                SetDefaultModelSettings(modelImporter);
+                isFbx = true;
+            }
+
             var fbxGameObject = AssetDatabase.LoadAssetAtPath<GameObject>(destinationPath);
             return fbxGameObject;
         }
 
-        private static void AddNewItemToContainer() => _storeItemContainer.storeItemList.Add(_tempSelectedProduct);
-
-        public static void SetStoreItemContainer(StoreItemContainer container)
+        private static bool IsFileAlreadyExists(string destinationPath)
         {
-            _storeItemContainer = container;
+            if (File.Exists(destinationPath))
+            {
+                Debug.LogWarning($"File already exists at {destinationPath} ");
+                return true;
+            }
+
+            return false;
         }
+
+        private static bool IsPathNull(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.LogError("Path can't be empty");
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void AddNewItemToContainer()
+        {
+            Debug.Log("New Item added" + _tempSelectedProduct.Icon.name);
+
+            _storeItemContainer.storeItemList.Add(_tempSelectedProduct);
+        }
+
+        public static void SetStoreItemContainer(StoreItemContainer container) => _storeItemContainer = container;
 
         private static void AddAnimator(GameObject prefab)
         {

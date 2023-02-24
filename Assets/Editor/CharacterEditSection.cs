@@ -28,12 +28,12 @@ namespace Editor
 
             var productNames = _storeItemList.Select(p => p.Name).ToList();
             GUILayout.Label("Edit Character Section", EditorStyles.boldLabel);
-            
+
             using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 _selectedItemIndex =
                     EditorGUILayout.Popup("Select an item", _selectedItemIndex, productNames.ToArray());
-                
+
                 if (_storeItemList.Count == 0) return;
 
                 var selectedProduct = _storeItemList[_selectedItemIndex];
@@ -102,16 +102,15 @@ namespace Editor
                         EditorUtility.SetDirty(_storeItemContainer);
                         AssetDatabase.SaveAssets();
                         _tempSelectedItem = null;
-                        Debug.Log("Item edited");
+                        Debug.Log($"{selectedProduct.Name} edited");
                     }
                 }
 
                 if (GUILayout.Button("Remove"))
                 {
+                    Debug.Log($"{selectedProduct.Name} removed from store list");
                     _storeItemList.Remove(selectedProduct);
                     _selectedItemIndex--;
-                    Debug.Log("Item removed from store");
-
                 }
             }
         }

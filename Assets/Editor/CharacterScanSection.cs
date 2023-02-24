@@ -57,15 +57,25 @@ namespace Editor
         {
             _unUsedPrefabs.Clear();
             var charPrefabList = GetPrefabStartsWith(PrefabNamePrefix);
+
             _unUsedPrefabs = GetUnUsedPrefabs(charPrefabList);
+
+            if (_unUsedPrefabs.Count == 0)
+            {
+                EditorUtility.DisplayDialog("No Unused prefab", "There is no unused prefab", "OK");
+            }
         }
 
         private static List<GameObject> GetUnUsedPrefabs(List<GameObject> charPrefabList)
         {
+            if (charPrefabList.Count == 0) return charPrefabList;
+
             for (int i = charPrefabList.Count - 1; i >= 0; i--)
             {
                 foreach (var storeItem in _storeItemContainer.storeItemList)
                 {
+                    if (storeItem.Prefab == null) continue;
+                    
                     if (charPrefabList[i].name == storeItem.Prefab.name)
                     {
                         charPrefabList.RemoveAt(i);
